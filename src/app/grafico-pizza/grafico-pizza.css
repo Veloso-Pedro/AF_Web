@@ -1,0 +1,10 @@
+.grafico { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+svg { width: 100%; max-width: 220px; }
+circle { cursor: pointer; }
+circle:hover { opacity: 0.8; }
+.legenda { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; }
+.legenda li { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 8px; align-items: center; }
+.marcador { width: 12px; height: 12px; border-radius: 3px; }
+.pct { color: var(--texto-suave); }
+.legenda strong { min-width: 90px; text-align: right; }
+.vazio { text-align: center; color: var(--texto-suave); padding: 24px 0; }

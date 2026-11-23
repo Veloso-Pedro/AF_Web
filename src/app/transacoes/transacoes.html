@@ -1,0 +1,128 @@
+<section class="cards">
+  <div class="card receita">
+    <span>Entradas</span>
+    <strong>{{ totalReceitas | currency: 'BRL' }}</strong>
+  </div>
+  <div class="card despesa">
+    <span>Saídas</span>
+    <strong>{{ totalDespesas | currency: 'BRL' }}</strong>
+  </div>
+  <div class="card saldo" [class.negativo]="saldo < 0">
+    <span>Saldo</span>
+    <strong>{{ saldo | currency: 'BRL' }}</strong>
+  </div>
+</section>
+
+@if (erro) {
+  <p class="alerta">{{ erro }} <button type="button" (click)="erro = ''">×</button></p>
+}
+
+<div class="grade">
+  <div class="coluna">
+    <section class="painel">
+      <h2>{{ editandoId ? 'Editar movimentação' : 'Nova movimentação' }}</h2>
+      <form (ngSubmit)="salvar()">
+        <div class="tipos">
+          <label [class.ativo]="tipo === 'receita'" class="receita">
+            <input type="radio" [(ngModel)]="tipo" (ngModelChange)="trocarTipo()" name="tipo" value="receita" />
+            Entrada
+          </label>
+          <label [class.ativo]="tipo === 'despesa'" class="despesa">
+            <input type="radio" [(ngModel)]="tipo" (ngModelChange)="trocarTipo()" name="tipo" value="despesa" />
+            Saída
+          </label>
+        </div>
+
+        <div>
+          <label>Descrição</label>
+          <input [(ngModel)]="descricao" name="descricao" placeholder="Ex.: Supermercado" required />
+        </div>
+
+        <div class="linha">
+          <div>
+            <label>Valor (R$)</label>
+            <input type="number" [(ngModel)]="valor" name="valor" min="0.01" step="0.01" required />
+          </div>
+          <div>
+            <label>Data</label>
+            <input type="date" [(ngModel)]="data" name="data" required />
+          </div>
+        </div>
+
+        <div>
+          <label>Categoria</label>
+          <select [(ngModel)]="categoria" name="categoria" required>
+            <option value="" disabled>Selecione...</option>
+            @for (c of categoriasDoTipo(); track c.nome) {
+              <option [value]="c.nome">{{ c.nome }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="acoes">
+          <button type="submit" class="primario" [disabled]="salvando">
+            {{ editandoId ? 'Salvar alterações' : 'Adicionar' }}
+          </button>
+          @if (editandoId) {
+            <button type="button" (click)="cancelarEdicao()">Cancelar</button>
+          }
+        </div>
+      </form>
+    </section>
+
+    <section class="painel">
+      <div class="cabecalho">
+        <h2>Por categoria</h2>
+        <div class="alternar">
+          <button type="button" [class.ativo]="tipoGrafico === 'despesa'" (click)="trocarTipoGrafico('despesa')">Saídas</button>
+          <button type="button" [class.ativo]="tipoGrafico === 'receita'" (click)="trocarTipoGrafico('receita')">Entradas</button>
+        </div>
+      </div>
+      <app-grafico-pizza [dados]="dadosGrafico" />
+    </section>
+  </div>
+
+  <section class="painel">
+    <div class="cabecalho">
+      <h2>Movimentações</h2>
+      <div class="alternar">
+        <select [(ngModel)]="filtroCategoria" name="filtroCategoria">
+          <option value="">Todas as categorias</option>
+          @for (c of categorias; track c.nome) {
+            <option [value]="c.nome">{{ c.nome }}</option>
+          }
+        </select>
+        <button type="button" (click)="carregar()" [disabled]="carregando">Recarregar</button>
+      </div>
+    </div>
+
+    @if (carregando) {
+      <p class="vazio">Carregando…</p>
+    } @else {
+      @if (transacoesFiltradas.length === 0) {
+        <p class="vazio">Nenhuma movimentação.</p>
+      } @else {
+        <ul>
+          @for (t of transacoesFiltradas; track t._id) {
+            <li [style.border-left-color]="corDaCategoria(t.categoria)">
+              <div class="info">
+                <strong>{{ t.descricao }}</strong>
+                <div class="meta">
+                  <span class="chip" [style.background]="corDaCategoria(t.categoria)">{{ t.categoria }}</span>
+                  <span>{{ t.data | date: 'dd/MM/yyyy' : 'UTC' }}</span>
+                </div>
+              </div>
+              <span class="valor {{ t.tipo }}">
+                {{ t.tipo === 'despesa' ? '-' : '+' }} {{ t.valor | currency: 'BRL' }}
+              </span>
+              <div class="botoes">
+                <button type="button" (click)="editar(t)">Editar</button>
+                <button type="button" class="perigo" (click)="excluir(t)">Excluir</button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </section>
+</div>
